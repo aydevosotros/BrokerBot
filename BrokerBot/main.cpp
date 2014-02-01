@@ -11,7 +11,7 @@
 #include <string>
 #include <cstdlib>
 #include <unistd.h>
-
+#include "Sample.h"
 //
 // Non-Blocking GetLine:
 //    Gets a line of characters from a stream, until it finds a delimiter or the timeout passes
@@ -137,13 +137,29 @@ int main(void)
     while (s != "END") {
         nb_getline(std::cin, s);
         if (s != ""){
-			Sample candle = crear_sample(s);
-            std::cerr << "Recibido: (" << s << ")" << std::endl;
-			//si predict devuelve true quiere decir que va a subir
-			if(predict(candle)){
-				cantidad_a_comprar = calcular_compra(cantidad_actual); //calculamos cuanto queremos comprar
-				std::cout << "BUY " << cantidad_a_comprar << std::endl; //enviamos el mensaje
-				nb_getline(std::cin, s); //para el mensaje de bought
+			subs = "";
+			subs = s.substr(0, 3);
+			if(subs == "NEXT"){
+				Sample candle = crear_sample(s);
+				std::cerr << "Recibido: (" << s << ")" << std::endl;
+				//si predict devuelve true quiere decir que va a subir
+				if(predict(candle)){
+					cantidad_a_comprar = calcular_compra(cantidad_actual); //calculamos cuanto queremos comprar
+					std::cout << "BUY " << cantidad_a_comprar << std::endl; //enviamos el mensaje		
+				}else{
+					cantidad_a_vender = calcular_venta(cantidad_actual); //calculamos la cantidad a vender
+					std::cout << "SELL " << cantidad_a_vender << std::endl; //mandamos el mensaje sell				
+				}
+			}else if(subs == "SOLD"){
+				std::cerr << s << std::endl; //mostramos el mensaje de sold
+				std::stringstream ss;
+				ss.clear(); ss.str(s);
+
+				ss >> s >> numero_acciones >> precio_accion; //fragmentamos el mensaje
+
+				precio_total = numero_acciones * precio_accion; //calculamos el precio total
+				cantidad_actual = cantidad_actual + precio_total; //aumentamos nuestra cantidad_actual
+			}else if(subs == "BOUG"){
 				std::cerr << s << std::endl; //mostramos el mensaje de bought
 
 				std::stringstream ss;
@@ -153,19 +169,8 @@ int main(void)
 
 				precio_total = numero_acciones * precio_accion; //calculamos el precio total
 				cantidad_actual = cantidad_actual - precio_total; //lo descontamos de nuestra cantidad
-			}else{
-				cantidad_a_vender = calcular_venta(cantidad_actual); //calculamos la cantidad a vender
-				std::cout << "SELL " << cantidad_a_vender << std::endl; //mandamos el mensaje sell
-				nb_getline(std::cin, s); //para el mensaje de sold
-				std::cerr << s << std::endl; //mostramos el mensaje de sold
-
-				std::stringstream ss;
-				ss.clear(); ss.str(s);
-
-				ss >> s >> numero_acciones >> precio_accion; //fragmentamos el mensaje
-
-				precio_total = numero_acciones * precio_accion; //calculamos el precio total
-				cantidad_actual = cantidad_actual + precio_total; //aumentamos nuestra cantidad_actual
+			}else if(subs == "NOT_"){// no entiende el mensaje enviado,
+			
 			}
 		}
         //sendRandomCommand();
@@ -175,3 +180,4 @@ int main(void)
     return 0;
 }
 
+					
