@@ -11,6 +11,7 @@
 #include <string>
 #include <cstdlib>
 #include <unistd.h>
+#include <limits.h>
 #include "Sample.h"
 #include "GodMachine.h"
 
@@ -102,7 +103,7 @@ Sample crear_sample(std::string s){
 }
 int main(void)
 {
-	GodMachine *machine = new GodMachine(LinearRegression);
+	GodMachine *machine = new GodMachine(NeuralNetwork);
     bool reg = false;
     std::string s = "", subs;
 	double cantidad_a_vender = 0;
@@ -110,6 +111,18 @@ int main(void)
 	double numero_acciones = 0;
 	double precio_accion = 0;
 	double precio_total = 0;
+	int candletimethetas = 0;
+	int candletimesim = 0;
+	int initTime = 0;
+	int finishTime = 0;
+	int candlesPorMuestra = 6;
+	int muestrasAlmacenadas = 0;
+	double high = 0;
+	double open;
+	double close;
+	double low = DBL_MAX;
+	double volume = 0;
+
 
     // Wait for INITIALIZE command
     while (s != "INITIALIZE") {
@@ -139,24 +152,75 @@ int main(void)
     unsigned mode, duration, candletime;
     double initfiat;
     ss >> s >> mode >> duration >> candletime >> initfiat;
-    std::cerr << "START " << mode << duration << candletime << initfiat;
+    std::cerr << "START " << mode << " " << duration << " " << candletime << " " << initfiat << std::endl;
 	double cantidad_actual = initfiat;
     // Until the end of the simulation, BUY and SELL
     while (s != "END") {
         nb_getline(std::cin, s);
         if (s != ""){
 			subs = "";
-			subs = s.substr(0, 3);
+			subs = s.substr(0, 4);
+			std::stringstream ss;
+			ss.clear(); ss.str(s);
+			double unixtime;
+			double tmphigh,tmpopen,tmpclose,tmplow,tmpvolume;
+			ss >> s >> unixtime >> tmphigh >> tmpopen >> tmpclose >> tmplow >> tmpvolume;
+
 			if(subs == "NEXT"){
-				Sample candle = crear_sample(s);
-				std::cerr << "Recibido: (" << s << ")" << std::endl;
-				//si predict devuelve true quiere decir que va a subir
-				if(machine->predict(candle) == 1){
-					cantidad_a_comprar = cantidadAComprar(cantidad_actual); //calculamos cuanto queremos comprar
-					std::cout << "BUY " << cantidad_a_comprar << std::endl; //enviamos el mensaje		
-				}else{
-					cantidad_a_vender = cantidadAVender(cantidad_actual); //calculamos la cantidad a vender
-					std::cout << "SELL " << cantidad_a_vender << std::endl; //mandamos el mensaje sell				
+				if (initTime == 0){
+					initTime = unixtime;
+				}
+				else if (finishTime == 0){;
+					finishTime = unixtime;
+				}
+				else{
+					candletimesim = finishTime-initTime;
+//					candlesPorMuestra = candletimethetas/candletimesim;
+					candlesPorMuestra = 6;
+
+					if(muestrasAlmacenadas == candlesPorMuestra) {
+						std::vector<double> inputs;
+						Sample candle;
+
+						inputs.push_back(high);
+						inputs.push_back(open);
+						inputs.push_back(close);
+						inputs.push_back(low);
+						inputs.push_back(volume);
+
+						candle.setInput(inputs);
+
+		//				std::cerr << "Recibido: (" << s << ")" << std::endl;
+						bool prediction = machine->predict(candle);
+						//si predict devuelve true quiere decir que va a subir
+						if(prediction == 1){
+							cantidad_a_comprar = 5; //calculamos cuanto queremos comprar
+							std::cerr << "Compro " << cantidad_a_comprar << std::endl;
+							std::cout << "BUY " << cantidad_a_comprar << std::endl; //enviamos el mensaje
+						}else{
+							cantidad_a_vender = 5; //calculamos la cantidad a vender
+							std::cerr << "Vendo " << cantidad_a_vender << std::endl; //mandamos el mensaje sell
+							std::cout << "SELL " << cantidad_a_vender << std::endl; //mandamos el mensaje sell
+						}
+
+						muestrasAlmacenadas = 0;
+						high = 0;
+						low = DBL_MAX;
+						volume = 0;
+					}
+
+
+					if(muestrasAlmacenadas == 0){
+						 open = tmpopen;
+					}
+					if (tmphigh > high)
+						high = tmphigh;
+					if (tmplow < low)
+						low = tmplow;
+					volume += tmpvolume;
+					close = tmpclose;
+
+					muestrasAlmacenadas++;
 				}
 			}else if(subs == "SOLD"){
 				std::cerr << s << std::endl; //mostramos el mensaje de sold
@@ -178,7 +242,7 @@ int main(void)
 				precio_total = numero_acciones * precio_accion; //calculamos el precio total
 				cantidad_actual = cantidad_actual - precio_total; //lo descontamos de nuestra cantidad
 			}else if(subs == "NOT_"){// no entiende el mensaje enviado,
-			
+				std::cerr << "Pinyico" << std::endl;
 			}
 		}
         //sendRandomCommand();
