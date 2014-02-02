@@ -12,6 +12,8 @@
 #include <cstdlib>
 #include <unistd.h>
 #include "Sample.h"
+#include "GodMachine.h"
+
 //
 // Non-Blocking GetLine:
 //    Gets a line of characters from a stream, until it finds a delimiter or the timeout passes
@@ -68,12 +70,12 @@ bool predict(Sample candle){
 
 	return false;
 }
-double cantidad_a_vender(double cantidad_actual){
+double cantidadAVender(double cantidad_actual){
 	double vender = (cantidad_actual * 50)/100;
 
 	return vender;
 }
-double cantidad_a_comprar(double cantidad_actual){
+double cantidadAComprar(double cantidad_actual){
 	double comprar = (cantidad_actual * 50)/100;
 
 	return comprar;
@@ -85,16 +87,22 @@ Sample crear_sample(std::string s){
 	unsigned unix_time;
 	double high,open,close,low,volume;
 	ss >> s >> unix_time >> high >> open >> close >> low >> volume;
-	candle.input[0] = high;
-	candle.input[1] = open;
-	candle.input[2] = close;
-	candle.input[3] = low;
-	candle.input[4] = volume;
+
+	std::vector<double> inputs;
+
+	inputs.push_back(high);
+	inputs.push_back(open);
+	inputs.push_back(close);
+	inputs.push_back(low);
+	inputs.push_back(volume);
+
+	candle.setInput(inputs);
 
 	return candle;
 }
 int main(void)
 {
+	GodMachine *machine = new GodMachine(LinearRegression);
     bool reg = false;
     std::string s = "", subs;
 	double cantidad_a_vender = 0;
@@ -143,11 +151,11 @@ int main(void)
 				Sample candle = crear_sample(s);
 				std::cerr << "Recibido: (" << s << ")" << std::endl;
 				//si predict devuelve true quiere decir que va a subir
-				if(predict(candle)){
-					cantidad_a_comprar = cantidad_a_comprar(cantidad_actual); //calculamos cuanto queremos comprar
+				if(machine->predict(candle) == 1){
+					cantidad_a_comprar = cantidadAComprar(cantidad_actual); //calculamos cuanto queremos comprar
 					std::cout << "BUY " << cantidad_a_comprar << std::endl; //enviamos el mensaje		
 				}else{
-					cantidad_a_vender = cantidad_a_vender(cantidad_actual); //calculamos la cantidad a vender
+					cantidad_a_vender = cantidadAVender(cantidad_actual); //calculamos la cantidad a vender
 					std::cout << "SELL " << cantidad_a_vender << std::endl; //mandamos el mensaje sell				
 				}
 			}else if(subs == "SOLD"){
