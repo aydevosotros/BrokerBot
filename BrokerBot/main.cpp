@@ -144,10 +144,10 @@ int main(void)
 				std::cerr << "Recibido: (" << s << ")" << std::endl;
 				//si predict devuelve true quiere decir que va a subir
 				if(predict(candle)){
-					cantidad_a_comprar = calcular_compra(cantidad_actual); //calculamos cuanto queremos comprar
+					cantidad_a_comprar = cantidad_a_comprar(cantidad_actual); //calculamos cuanto queremos comprar
 					std::cout << "BUY " << cantidad_a_comprar << std::endl; //enviamos el mensaje		
 				}else{
-					cantidad_a_vender = calcular_venta(cantidad_actual); //calculamos la cantidad a vender
+					cantidad_a_vender = cantidad_a_vender(cantidad_actual); //calculamos la cantidad a vender
 					std::cout << "SELL " << cantidad_a_vender << std::endl; //mandamos el mensaje sell				
 				}
 			}else if(subs == "SOLD"){
