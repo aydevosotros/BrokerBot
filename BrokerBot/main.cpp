@@ -52,55 +52,10 @@ void nb_getline(std::istream& in, std::string& str,
     str = ss.str();
 }
 
-//
-// Send a Random BUY/SELL command, or nothing
-//
-void sendRandomCommand()
-{
-    unsigned r = rand() % 1000;
-    double c = (double)(rand() % 1000) / 999.0;
-    switch(r) {
-        case 0: std::cout << "BUY " << c << std::endl; break;
-        case 1: std::cout << "SELL " << c << std::endl; break;
-        default: break;
-    }
+double stockToTrade(double valorAccion, double cantidad_actual){
+	return (int)(cantidad_actual * 0.5)/valorAccion;
 }
 
-//quiza predict deberia devolver 1--> compra / 0 --> no hace nada / -1 --> venta
-bool predict(Sample candle){
-
-	return false;
-}
-double cantidadAVender(double cantidad_actual){
-	double vender = (cantidad_actual * 50)/100;
-
-	return vender;
-}
-double cantidadAComprar(double cantidad_actual){
-	double comprar = (cantidad_actual * 50)/100;
-
-	return comprar;
-}
-Sample crear_sample(std::string s){
-	Sample candle;
-	std::stringstream ss;
-	 ss.clear(); ss.str(s);
-	unsigned unix_time;
-	double high,open,close,low,volume;
-	ss >> s >> unix_time >> high >> open >> close >> low >> volume;
-
-	std::vector<double> inputs;
-
-	inputs.push_back(high);
-	inputs.push_back(open);
-	inputs.push_back(close);
-	inputs.push_back(low);
-	inputs.push_back(volume);
-
-	candle.setInput(inputs);
-
-	return candle;
-}
 int main(void)
 {
 	GodMachine *machine = new GodMachine(NeuralNetwork);
@@ -109,9 +64,8 @@ int main(void)
 	double cantidad_a_vender = 0;
 	double cantidad_a_comprar = 0;
 	double numero_acciones = 0;
-	double precio_accion = 0;
 	double precio_total = 0;
-	int candletimethetas = 0;
+	int candletimethetas = 0;  //Hardcodear el tiempo de los candles de nuestras thetas
 	int candletimesim = 0;
 	int initTime = 0;
 	int finishTime = 0;
@@ -158,6 +112,7 @@ int main(void)
     while (s != "END") {
         nb_getline(std::cin, s);
         if (s != ""){
+//    		std::cerr << "Recibido: (" << s << ")" << std::endl;
 			subs = "";
 			subs = s.substr(0, 4);
 			std::stringstream ss;
@@ -190,15 +145,14 @@ int main(void)
 
 						candle.setInput(inputs);
 
-		//				std::cerr << "Recibido: (" << s << ")" << std::endl;
 						bool prediction = machine->predict(candle);
 						//si predict devuelve true quiere decir que va a subir
 						if(prediction == 1){
-							cantidad_a_comprar = 5; //calculamos cuanto queremos comprar
+							cantidad_a_comprar = stockToTrade(close,cantidad_actual); //calculamos cuanto queremos comprar
 							std::cerr << "Compro " << cantidad_a_comprar << std::endl;
 							std::cout << "BUY " << cantidad_a_comprar << std::endl; //enviamos el mensaje
 						}else{
-							cantidad_a_vender = 5; //calculamos la cantidad a vender
+							cantidad_a_vender = stockToTrade(close,cantidad_actual); //calculamos la cantidad a vender
 							std::cerr << "Vendo " << cantidad_a_vender << std::endl; //mandamos el mensaje sell
 							std::cout << "SELL " << cantidad_a_vender << std::endl; //mandamos el mensaje sell
 						}
@@ -227,9 +181,9 @@ int main(void)
 				std::stringstream ss;
 				ss.clear(); ss.str(s);
 
-				ss >> s >> numero_acciones >> precio_accion; //fragmentamos el mensaje
+				ss >> s >> numero_acciones >> close; //fragmentamos el mensaje
 
-				precio_total = numero_acciones * precio_accion; //calculamos el precio total
+				precio_total = numero_acciones * close; //calculamos el precio total
 				cantidad_actual = cantidad_actual + precio_total; //aumentamos nuestra cantidad_actual
 			}else if(subs == "BOUG"){
 				std::cerr << s << std::endl; //mostramos el mensaje de bought
@@ -237,9 +191,9 @@ int main(void)
 				std::stringstream ss;
 				ss.clear(); ss.str(s);
 
-				ss >> s >> numero_acciones >> precio_accion; //fragmentamos el mensaje
+				ss >> s >> numero_acciones >> close; //fragmentamos el mensaje
 
-				precio_total = numero_acciones * precio_accion; //calculamos el precio total
+				precio_total = numero_acciones * close; //calculamos el precio total
 				cantidad_actual = cantidad_actual - precio_total; //lo descontamos de nuestra cantidad
 			}else if(subs == "NOT_"){// no entiende el mensaje enviado,
 				std::cerr << "Pinyico" << std::endl;
@@ -252,4 +206,4 @@ int main(void)
     return 0;
 }
 
-					
+

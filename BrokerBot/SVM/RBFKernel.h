@@ -17,6 +17,14 @@ public:
 
 	CGAL::MP_Float K(arma::vec X1, arma::vec X2);
 
+	double getSigma() const {
+		return sigma;
+	}
+
+	void setSigma(double sigma) {
+		this->sigma = sigma;
+	}
+
 private:
 	double sigma;
 

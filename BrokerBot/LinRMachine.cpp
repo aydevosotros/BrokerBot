@@ -6,6 +6,7 @@ LinRMachine::LinRMachine() {
 	C_iterations = 1000;
 	C_alpha = 0.001;
 	C_trainingType = 2; //1 normal, 2 gradiente
+	C_executionMode = 1;
 }
 
 LinRMachine::~LinRMachine() {}
@@ -349,8 +350,8 @@ void LinRMachine::test(){
 
 double LinRMachine::predict(Sample input){
 //	std::cout << "I'm predicting with the LinRMachine" << std::endl;
-
-	loadThetas("Values/LinR/thetas");
+	if(C_executionMode == 1)
+		loadThetas("../Values/LinR/MSFT/20101001-20131201-1d-14d-OpenValue-Training");
 
 	return h(input.getInput());
 }

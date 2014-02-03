@@ -17,6 +17,14 @@ public:
 
 	CGAL::MP_Float K(arma::vec X1, arma::vec X2);
 
+	int getQ() const {
+		return Q;
+	}
+
+	void setQ(int q) {
+		Q = q;
+	}
+
 private:
 	int Q;
 	int C;

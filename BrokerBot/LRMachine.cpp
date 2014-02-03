@@ -6,6 +6,7 @@ LRMachine::LRMachine() {
 	iterTrain = 1000;
 	alphaTrain = 0.01;
 	trainType = 1; //1 normal, 2 gradiente
+	C_executionMode = 1;
 }
 
 LRMachine::~LRMachine() {}
@@ -151,8 +152,7 @@ void LRMachine::loadThetas(std::string filename) {
 
 	route.append(thetaName);
 
-//	C_thetaFileName = route;
-	C_thetaFileName = "../Values/LR/rap2_training/15d-OpenValue-CloseValue-HighValue-LowValue-VolumeValue-Scaled-Training";
+	C_thetaFileName = route;
 
 //	std::cout << "EL archivo que vamos a leer es: " << thetasFileName << std::endl;
 
@@ -169,7 +169,7 @@ void LRMachine::loadThetas(std::string filename) {
 
 		thetasFile.close();
 	} else{
-		std::cout << "Unable to open file asdfasdf" << std::endl;
+		std::cout << "Unable to open file" << std::endl;
 	}
 }
 
@@ -352,8 +352,8 @@ void LRMachine::test(){
 
 double LRMachine::predict(Sample input){
 //	std::cout << "I'm predicting this input with the LRMachine" << std::endl;
-
-	loadThetas("../Values/LR/rap2_training/15d-OpenValue-CloseValue-HighValue-LowValue-VolumeValue-Scaled-Training");
+	if(C_executionMode == 1)
+		loadThetas("../Values/LR/MSFT/20101001-20131201-1d-14d-OpenValue-Training");
 
 	// Como tengo un sigmoide, con un threshold voy to cheto
 	double p = 0.0;

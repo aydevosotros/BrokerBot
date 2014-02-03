@@ -1,11 +1,13 @@
 #include "NNMachine.h"
 
-NNMachine::NNMachine() {}
+NNMachine::NNMachine() {	executionMode = 1;
+}
 
 NNMachine::~NNMachine() {}
 
 void NNMachine::setParameters(char* argv[]) {
 	this->executionMode = atoi(argv[2]);
+
 
 	if(executionMode == 0){
 		this->trainingFile = argv[3];
@@ -97,7 +99,7 @@ void NNMachine::loadThetas(){
 
 	//Ahora averiguaremos el nombre que debe tener el archivo de thetas
 
-	std::vector<std::string> trainingFileParts(Utils::split(inputFile,'-'));
+	/*std::vector<std::string> trainingFileParts(Utils::split(inputFile,'-'));
 	std::string root = trainingFileParts[0].substr(0,10);
 	std::string machinefolder = "NN/";
 	std::string value = trainingFileParts[0].substr(10,trainingFileParts[0].length());
@@ -109,10 +111,9 @@ void NNMachine::loadThetas(){
 	prefix.append(root);
 	prefix.append(value);
 	std::string thetaName = inputFile.substr(prefix.length()+1,inputFile.length());
-	route.append(thetaName);
+	route.append(thetaName);*/
 //	thetasFileName = route;
 	thetasFileName = "../Values/LR/rap2_training/15d-OpenValue-CloseValue-HighValue-LowValue-VolumeValue-Scaled-Training";
-
 //	std::cout << "EL archivo que vamos a leer es: " << thetasFileName << std::endl;
 
 	//Y para terminar, escribimos las thetas en un archivo
@@ -181,6 +182,7 @@ void NNMachine::saveThetas(){
 	} else{
 		std::cout << "Unable to open file" << std::endl;
 	}
+	std::cout << "LLego hasta aquí después de guardar las thetas" << std::endl;
 }
 
 void NNMachine::showThetas(){
@@ -202,11 +204,12 @@ void NNMachine::clearTrainingSet(){
 void NNMachine::run() {
 	if(this->executionMode == 0){
 		std::cout << "Cargando el training set..." << std::endl;
-		loadTrainingSet("na");
+		loadTrainingSet(trainingFile);
 		std::cout << "Cargando el testing set..." << std::endl;
-		loadTestingSet("na");
+		loadTestingSet(testFile);
 		std::cout << "Entrenando..." << std::endl;
 		train();
+		std::cout << "Después de entrenar hago el test" << std::endl;
 		test();
 	} else if(this->executionMode == 1){
 		std::cout << "Cargando input" << std::endl;
@@ -222,10 +225,8 @@ void NNMachine::run() {
 void NNMachine::test() {
 	double treshold = 0.5;
 
-//	std::cout << "I'm testing with the LinRMachine" << std::endl;
-
 	this->fillTestingY();
-
+	std::cout << "I'm testing with the NNMachine" << std::endl;
 	std::vector<int> auxY;
 
 	for(unsigned int i = 0; i < this->testingSet.size(); i++){
@@ -293,7 +294,10 @@ void NNMachine::test() {
 }
 
 double NNMachine::predict(Sample input) {
-	loadThetas();
+	std::cout << "Cargando la thetas" << std::endl;
+	if(executionMode == 1)
+		loadThetas();
+	std::cout << "Propagando..." << std::endl;
 	forwardPropagate(input);
 	return this->a[L-1](0);
 }
@@ -430,7 +434,7 @@ void NNMachine::initRandomThetas() {
 		arma::mat thetaL(s_l[l+1], s_l[l]+1);
 		for(int i=0; i<s_l[l+1]; i++)
 			for(int j=0; j<s_l[l]+1; j++)
-				thetaL(i,j) = Utils::uniformRandomDouble(0.0,1.0);
+				thetaL(i,j) = Utils::uniformRandomDouble(0.0,10.0);
 		this->thetas.push_back(thetaL);
 	}
 }
@@ -547,9 +551,9 @@ void NNMachine::trainByGradient(int iter, double alpha) {
 		double vari = std::abs(pCoste-coste);
 		std::cout << "La variación en el coste para la iteración "<< it <<" es de: " << vari << std::endl;
 		if(it>0){
-			if(vari <= 0.000001){
-//				std::cout << "Estoy suficientemente entrenado!!!!!!\n";
-//				break;
+			if(vari <= 0.00001){
+				std::cout << "Estoy suficientemente entrenado!!!!!!\n";
+				break;
 			}
 //			if(std::isnan(coste))
 //				break;

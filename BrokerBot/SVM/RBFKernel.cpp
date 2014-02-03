@@ -9,7 +9,7 @@
 
 RBFKernel::RBFKernel() {
 	// TODO Auto-generated constructor stub
-	this->sigma = 1.0;
+	this->sigma = 0.1;
 }
 
 RBFKernel::~RBFKernel() {

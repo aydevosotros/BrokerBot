@@ -23,6 +23,6 @@ CGAL::MP_Float PolynomialKernel::K(arma::vec X1, arma::vec X2) {
 	for(int i=0; i<Q; i++){
 		partial *= partial;
 	}
-	std::cout << "El innerProduct vale: " << partial << std::endl;
+//	std::cout << "El innerProduct vale: " << partial << std::endl;
 	return partial;
 }

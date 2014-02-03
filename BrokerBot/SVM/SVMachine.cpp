@@ -4,6 +4,8 @@ SVMachine::SVMachine() {
 	C_kernel = new LinearKernel();
 	C_nFeatures = 0;
 	C_m = 0;
+	C_executionMode = 1;
+
 }
 
 SVMachine::SVMachine(KernelType t) {
@@ -201,7 +203,7 @@ void SVMachine::run(){
 //		//Fin de la comprobacion
 
 		train();
-//		test();
+		test();
 	} else if(C_executionMode == 1){
 //		std::cout << "Predict" << std::endl;
 
@@ -270,7 +272,7 @@ void SVMachine::loadParams(){
 
 	route.append(name);
 
-	C_fileName = route;
+	C_fileName = "params.txt";
 
 //	std::cout << "EL archivo que vamos a leer es: " << C_fileName << std::endl;
 
@@ -468,6 +470,8 @@ void SVMachine::test(){
 	std::cout << "fPositives = " << fPositives << std::endl;
 	std::cout << "tNegatives = " << tNegatives << std::endl;
 
+	std::cout << "Acierto: " << (tPositives + tNegatives) / this->C_actualY.size() << std::endl;
+
 	double precission = tPositives / (tPositives + fPositives);
 
 	std::cout << "Precission = " << precission << std::endl;
@@ -483,6 +487,8 @@ void SVMachine::test(){
 
 double SVMachine::predict(Sample input){
 //	std::cout << "I'm predicting with the SVMachine" << std::endl;
+	if(C_executionMode == 1)
+		loadParams();
 
     ET aux(0.0);
     // Hago esto provisional para escalar
@@ -656,11 +662,11 @@ void SVMachine::quadraticSolution() {
 	for(int i = 0; i < n; i++){
 		for(int j = 0; j<=i; j++){
 			ET ip = C_kernel->K(C_X.row(i).t(),C_X.row(j).t());
-			std::cout << "El kernel para " << i << "," << j << " nos dice que el innerproduct es: " << ip << std::endl;
+//			std::cout << "El kernel para " << i << "," << j << " nos dice que el innerproduct es: " << ip << std::endl;
 			ET daux = ip*ET(C_y.at(i))*ET(C_y.at(j));
 			std::cout << "El producto de " << i << "," << j << ": " << daux << std::endl;
 			qp.set_d(i,j,daux);
-			std::cout << "La matriz auxiliar vale:" <<  daux << std::endl;
+//			std::cout << "La matriz auxiliar vale:" <<  daux << std::endl;
 		}
 	}
 
