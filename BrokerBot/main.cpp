@@ -106,11 +106,12 @@ int main(void)
     while (s != "END") {
         nb_getline(std::cin, s);
         if (s != ""){
-//    		std::cerr << "Recibido: (" << s << ")" << std::endl;
 			subs = "";
 			subs = s.substr(0, 4);
 
 			if(subs == "NEXT"){
+//				std::cerr << s << std::endl;
+
 				//Almacenamos los datos del candle leído
 				std::stringstream ss;
 				ss.clear(); ss.str(s);
