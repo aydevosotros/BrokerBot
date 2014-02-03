@@ -52,6 +52,7 @@ void nb_getline(std::istream& in, std::string& str,
     str = ss.str();
 }
 
+//Return the value of stock to buy or sell
 double stockToTrade(double valorAccion, double cantidad_actual){
 	return (int)(cantidad_actual * 0.5)/valorAccion;
 }
@@ -69,7 +70,7 @@ int main(void)
 	int candletimesim = 0;
 	int initTime = 0;
 	int finishTime = 0;
-	int candlesPorMuestra = 6;
+	int candlesPorMuestra = 0;
 	int muestrasAlmacenadas = 0;
 	double high = 0;
 	double open;
@@ -115,13 +116,16 @@ int main(void)
 //    		std::cerr << "Recibido: (" << s << ")" << std::endl;
 			subs = "";
 			subs = s.substr(0, 4);
-			std::stringstream ss;
-			ss.clear(); ss.str(s);
-			double unixtime;
-			double tmphigh,tmpopen,tmpclose,tmplow,tmpvolume;
-			ss >> s >> unixtime >> tmphigh >> tmpopen >> tmpclose >> tmplow >> tmpvolume;
 
 			if(subs == "NEXT"){
+				//Almacenamos los datos del candle leído
+				std::stringstream ss;
+				ss.clear(); ss.str(s);
+				double unixtime;
+				double tmphigh,tmpopen,tmpclose,tmplow,tmpvolume;
+				ss >> s >> unixtime >> tmphigh >> tmpopen >> tmpclose >> tmplow >> tmpvolume;
+
+				//Guardamos la diferencia de tiempo entre candles del simulador
 				if (initTime == 0){
 					initTime = unixtime;
 				}
@@ -130,9 +134,10 @@ int main(void)
 				}
 				else{
 					candletimesim = finishTime-initTime;
-//					candlesPorMuestra = candletimethetas/candletimesim;
+//					candlesPorMuestra = (int)(candletimethetas/candletimesim);
 					candlesPorMuestra = 6;
 
+					//Si tenemos los datos suficientes para un candle agrupado, lo creamos y predecimos el siguiente
 					if(muestrasAlmacenadas == candlesPorMuestra) {
 						std::vector<double> inputs;
 						Sample candle;
@@ -157,13 +162,14 @@ int main(void)
 							std::cout << "SELL " << cantidad_a_vender << std::endl; //mandamos el mensaje sell
 						}
 
+						//Reinicializamos los valores del nuevo candle agrupado
 						muestrasAlmacenadas = 0;
 						high = 0;
 						low = DBL_MAX;
 						volume = 0;
 					}
 
-
+					//Guardamos la información para el candle agrupado
 					if(muestrasAlmacenadas == 0){
 						 open = tmpopen;
 					}
