@@ -59,7 +59,7 @@ int main(void)
 	double cantidad_a_comprar = 0;
 	double numero_acciones = 0;
 	double precio_total = 0;
-	int candletimethetas = 0;  //Hardcodear el tiempo de los candles de nuestras thetas
+	int candletimethetas = 300;  //Hardcodear el tiempo de los candles de nuestras thetas
 	int candletimesim = 0;
 	int initTime = 0;
 	int finishTime = 0;
@@ -70,7 +70,11 @@ int main(void)
 	double close;
 	double low = DBL_MAX;
 	double volume = 0;
-
+	int parameters = 1; // Hardcodear si usamos PCA (0) o si usamos sólo el close (1)
+	int dimensions = 12; // Hardcodear cuántas dimensiones usamos en una muestra
+	int actualDimensions = 0;
+	std::vector<double> inputs;
+	Sample sample;
 
     // Wait for INITIALIZE command
     while (s != "INITIALIZE") {
@@ -128,39 +132,44 @@ int main(void)
 				}
 				else{
 					candletimesim = finishTime-initTime;
-//					candlesPorMuestra = (int)(candletimethetas/candletimesim);
-					candlesPorMuestra = 6;
+					candlesPorMuestra = (int)(candletimethetas/candletimesim);
 
 					//Si tenemos los datos suficientes para un candle agrupado, lo creamos y predecimos el siguiente
 					if(muestrasAlmacenadas == candlesPorMuestra) {
-						std::vector<double> inputs;
-						Sample candle;
 
-						inputs.push_back(high);
-						inputs.push_back(open);
-						inputs.push_back(close);
-						inputs.push_back(low);
-						inputs.push_back(volume);
-
-						candle.setInput(inputs);
-
-						bool prediction = machine->predict(candle);
-						//si predict devuelve true quiere decir que va a subir
-						if(prediction == 1){
-							cantidad_a_comprar = stockToTrade(close,cantidad_actual); //calculamos cuanto queremos comprar
-							std::cerr << "Compro " << cantidad_a_comprar << std::endl;
-							std::cout << "BUY " << cantidad_a_comprar << std::endl; //enviamos el mensaje
-						}else{
-							cantidad_a_vender = stockToTrade(close,cantidad_actual); //calculamos la cantidad a vender
-							std::cerr << "Vendo " << cantidad_a_vender << std::endl; //mandamos el mensaje sell
-							std::cout << "SELL " << cantidad_a_vender << std::endl; //mandamos el mensaje sell
+						if(parameters == 1){
+							if(actualDimensions < dimensions){
+								inputs.push_back(close);
+								actualDimensions++;
+							}
 						}
 
-						//Reinicializamos los valores del nuevo candle agrupado
-						muestrasAlmacenadas = 0;
-						high = 0;
-						low = DBL_MAX;
-						volume = 0;
+						if (actualDimensions == dimensions){
+							sample.setInput(inputs);
+
+							int prediction = machine->predict(sample);
+							inputs.clear();
+							actualDimensions = 0;
+
+							sample = Sample();
+
+							//si predict devuelve true quiere decir que va a subir
+							if(prediction == 1){
+								cantidad_a_comprar = stockToTrade(close,cantidad_actual); //calculamos cuanto queremos comprar
+								std::cerr << "Compro " << cantidad_a_comprar << std::endl;
+								std::cout << "BUY " << cantidad_a_comprar << std::endl; //enviamos el mensaje
+							}else{
+								cantidad_a_vender = stockToTrade(close,cantidad_actual); //calculamos la cantidad a vender
+								std::cerr << "Vendo " << cantidad_a_vender << std::endl; //mandamos el mensaje sell
+								std::cout << "SELL " << cantidad_a_vender << std::endl; //mandamos el mensaje sell
+							}
+
+							//Reinicializamos los valores del nuevo candle agrupado
+							muestrasAlmacenadas = 0;
+							high = 0;
+							low = DBL_MAX;
+							volume = 0;
+						}
 					}
 
 					//Guardamos la información para el candle agrupado
