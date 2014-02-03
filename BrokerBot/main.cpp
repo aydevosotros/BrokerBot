@@ -1,10 +1,3 @@
-/*
- * main.cpp
- *
- *  Created on: Feb 1, 2014
- *      Author: antonio
- */
-
 
 #include <iostream>
 #include <sstream>
@@ -205,7 +198,6 @@ int main(void)
 				std::cerr << "Pinyico" << std::endl;
 			}
 		}
-        //sendRandomCommand();
         usleep(50000);      // Sleep for 0.05 seconds (20 times per second)
     }
 
