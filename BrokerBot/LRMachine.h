@@ -24,7 +24,7 @@ public:
 	void test();
 	double predict(Sample input);
 	void clearTrainingSet();
-
+	void readThetas(std::vector<std::string> lectura){}
 	void loadThetas();
 
 private:

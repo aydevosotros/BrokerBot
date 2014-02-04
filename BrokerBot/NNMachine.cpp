@@ -144,10 +144,16 @@ void NNMachine::loadThetas(){
 }
 
 void NNMachine::readThetas(std::vector<std::string> lectura){
+
 	this->thetas.clear();
 
-	int lin = 0;
+	int lin = 1;
 	std::string line;
+
+	line = lectura[0];
+	nFeatures = atoi(line.c_str());
+	init();
+	initTraining();
 
 	for(int l=0; l<L-1; l++){
 		arma::mat thetaL(s_l[l+1], s_l[l]+1);
@@ -162,8 +168,10 @@ void NNMachine::readThetas(std::vector<std::string> lectura){
 
 			lin++;
 		}
+
 		this->thetas.push_back(thetaL);
 	}
+	showThetas();
 }
 
 void NNMachine::saveThetas(){
@@ -215,9 +223,9 @@ void NNMachine::showThetas(){
 		for(int i=0; i<s_l[l+1]; i++){
 			std::cout << thetas[l](i,0);
 			for(int j=1; j<s_l[l]+1; j++){
-				std::cout << ";" << thetas[l](i,j);
+				std::cerr << ";" << thetas[l](i,j);
 			}
-			std::cout << std::endl;
+			std::cerr << std::endl;
 		}
 	}
 }
@@ -257,11 +265,11 @@ void NNMachine::test() {
 
 	for(unsigned int i = 0; i < this->testingSet.size(); i++){
 		double p = (double)predict(this->testingSet[i]);
-		std::cout << "Para una entrada de: ";
-		for(int j=0; j<this->nFeatures; j++){
-			std::cout << testingSet[i].getInput()[j] << " ";
-		}
-		std::cout << std::endl;
+//		std::cout << "Para una entrada de: ";
+//		for(int j=0; j<this->nFeatures; j++){
+//			std::cout << testingSet[i].getInput()[j] << " ";
+//		}
+//		std::cout << std::endl;
 		std::cout << "Obtengo una predicción de: " << p << std::endl;
 
 		if((p>treshold && this->actualY[i] > 0) || (p<=treshold && this->actualY[i] < 0)){
@@ -309,6 +317,10 @@ void NNMachine::test() {
 	}
 
 	std::cout << "Acierto: " << (tPositives + tNegatives) / this->actualY.size() << std::endl;
+	std::cout << "tPositives = " << tPositives << std::endl;
+	std::cout << "fNegatives = " << fNegatives << std::endl;
+	std::cout << "fPositives = " << fPositives << std::endl;
+	std::cout << "tNegatives = " << tNegatives << std::endl;
 
 	double precission = tPositives / (tPositives + fPositives);
 
@@ -324,9 +336,10 @@ void NNMachine::test() {
 }
 
 double NNMachine::predict(Sample input) {
+	std::cerr << "Voy a propagar" << std::endl;
 	forwardPropagate(input);
 	std::cerr << this->a[L-1](0) << std::endl;
-	return (this->a[L-1](0)>0.5)?1:-1;
+	return this->a[L-1](0);
 }
 
 void NNMachine::train(){
@@ -343,9 +356,9 @@ void NNMachine::init(){
 	s_l.clear();
 	s_l.push_back(this->nFeatures);
 	s_l.push_back(this->nFeatures*2);
-	s_l.push_back(this->nFeatures*3);
-	s_l.push_back(this->nFeatures*3);
-	s_l.push_back(this->nFeatures*2);
+	//    s_l.push_back(this->nFeatures*3);
+	//    s_l.push_back(this->nFeatures*3);
+	s_l.push_back(this->nFeatures);
 	s_l.push_back(1);
 	L = s_l.size();
 
@@ -365,7 +378,7 @@ void NNMachine::forwardPropagate(Sample s) {
 //		std::cout << "Propago por la capa: " << l << std::endl;
 		// Calculo z para la capa
 		arma::mat zL = this->thetas[l-1]*this->a[l-1];
-//		std::cout << "Prepara lo capa " << l << " con la z:" << std::endl << zL << std::endl;
+//		std::cerr << "Prepara lo capa " << l << " con la z:" << std::endl << zL << std::endl;
 		// Y calculo la activación para la capa
 		if(l<L-1){
 			for(int i=0; i<s_l[l]+1; i++){
@@ -458,7 +471,7 @@ void NNMachine::initRandomThetas() {
 		arma::mat thetaL(s_l[l+1], s_l[l]+1);
 		for(int i=0; i<s_l[l+1]; i++)
 			for(int j=0; j<s_l[l]+1; j++)
-				thetaL(i,j) = Utils::uniformRandomDouble(0.0,1.0);
+				thetaL(i,j) = Utils::uniformRandomDouble(-10.0,1.0);
 		this->thetas.push_back(thetaL);
 	}
 }

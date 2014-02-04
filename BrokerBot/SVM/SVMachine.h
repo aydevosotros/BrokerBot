@@ -35,13 +35,12 @@ public:
 	void loadTrainingSet(std::string filename);
 	void loadTestingSet(std::string filename);
 	void loadInput(std::string filename);
+	void readThetas(std::vector<std::string> lectura){}
 	void train();
 	void run();
 	void test();
 	double predict(Sample input);
 	void clearTrainingSet();
-
-	void loadThetas(){};
 
 private:
 	//ATRIBUTOS

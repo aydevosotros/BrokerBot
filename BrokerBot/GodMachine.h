@@ -55,6 +55,10 @@ public:
 		C_machine->loadInput(filename);
 	}
 
+	void readThetas(std::vector<std::string> lectura){
+		C_machine->readThetas(lectura);
+	}
+
 	void run(){
 		C_machine->run();
 	}
@@ -73,10 +77,6 @@ public:
 
 	void clearTrainingSet(){
 		C_machine->clearTrainingSet();
-	}
-
-	void loadThetas(){
-		C_machine->loadThetas();
 	}
 
 	void buy(double stockunits){
