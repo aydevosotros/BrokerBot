@@ -47,7 +47,7 @@ void nb_getline(std::istream& in, std::string& str,
 
 //Return the value of stock to buy or sell
 double stockToTrade(double valorAccion, double cantidad_actual){
-	return (int)(cantidad_actual * 0.5)/valorAccion;
+	return (cantidad_actual * 0.5)/valorAccion;
 }
 
 int main(void)
@@ -65,13 +65,13 @@ int main(void)
 	int finishTime = 0;
 	int candlesPorMuestra = 0;
 	int muestrasAlmacenadas = 0;
-	double high = 0;
-	double open;
-	double close;
-	double low = DBL_MAX;
-	double volume = 0;
+	double highValue = 0;
+	double openValue;
+	double closeValue;
+	double lowValue = DBL_MAX;
+	double volumeValue = 0;
 	int parameters = 1; // Hardcodear si usamos PCA (0) o si usamos sólo el close (1)
-	int dimensions = 12; // Hardcodear cuántas dimensiones usamos en una muestra
+	int dimensions = 288; // Hardcodear cuántas dimensiones usamos en una muestra
 	int actualDimensions = 0;
 	std::vector<double> inputs;
 	Sample sample;
@@ -85,7 +85,7 @@ int main(void)
     // Register into the match
     std::stringstream ss;
     srand(time(NULL));
-    ss << "ply" << rand() % 1000;
+    ss << "userCampus";
     std::cout << "REGISTER " << ss.str() << std::endl;
 
     // Wait for START command
@@ -112,7 +112,6 @@ int main(void)
         if (s != ""){
 			subs = "";
 			subs = s.substr(0, 4);
-
 			if(subs == "NEXT"){
 //				std::cerr << s << std::endl;
 
@@ -132,56 +131,55 @@ int main(void)
 				}
 				else{
 					candletimesim = finishTime-initTime;
-					candlesPorMuestra = (int)(candletimethetas/candletimesim);
+//					candlesPorMuestra = candletimethetas/candletimesim;
+					candlesPorMuestra = 1;
 
 					//Si tenemos los datos suficientes para un candle agrupado, lo creamos y predecimos el siguiente
 					if(muestrasAlmacenadas == candlesPorMuestra) {
-
 						if(parameters == 1){
 							if(actualDimensions < dimensions){
-								inputs.push_back(close);
+								inputs.push_back(closeValue);
 								actualDimensions++;
 							}
 						}
 
 						if (actualDimensions == dimensions){
 							sample.setInput(inputs);
-
-							int prediction = machine->predict(sample);
+							machine->loadThetas();
+							double prediction = machine->predict(sample);
 							inputs.clear();
 							actualDimensions = 0;
 
 							sample = Sample();
 
 							//si predict devuelve true quiere decir que va a subir
-							if(prediction == 1){
-								cantidad_a_comprar = stockToTrade(close,cantidad_actual); //calculamos cuanto queremos comprar
+							if(prediction > 0){
+								cantidad_a_comprar = stockToTrade(closeValue,cantidad_actual); //calculamos cuanto queremos comprar
 								std::cerr << "Compro " << cantidad_a_comprar << std::endl;
 								std::cout << "BUY " << cantidad_a_comprar << std::endl; //enviamos el mensaje
 							}else{
-								cantidad_a_vender = stockToTrade(close,cantidad_actual); //calculamos la cantidad a vender
+								cantidad_a_vender = stockToTrade(closeValue,cantidad_actual); //calculamos la cantidad a vender
 								std::cerr << "Vendo " << cantidad_a_vender << std::endl; //mandamos el mensaje sell
 								std::cout << "SELL " << cantidad_a_vender << std::endl; //mandamos el mensaje sell
 							}
-
-							//Reinicializamos los valores del nuevo candle agrupado
-							muestrasAlmacenadas = 0;
-							high = 0;
-							low = DBL_MAX;
-							volume = 0;
 						}
-					}
 
+						//Reinicializamos los valores del nuevo candle agrupado
+						muestrasAlmacenadas = 0;
+						highValue = 0;
+						lowValue = DBL_MAX;
+						volumeValue = 0;
+					}
 					//Guardamos la información para el candle agrupado
 					if(muestrasAlmacenadas == 0){
-						 open = tmpopen;
+						 openValue = tmpopen;
 					}
-					if (tmphigh > high)
-						high = tmphigh;
-					if (tmplow < low)
-						low = tmplow;
-					volume += tmpvolume;
-					close = tmpclose;
+					if (tmphigh > highValue)
+						highValue = tmphigh;
+					if (tmplow < lowValue)
+						lowValue = tmplow;
+					volumeValue += tmpvolume;
+					closeValue = tmpclose;
 
 					muestrasAlmacenadas++;
 				}
@@ -190,9 +188,9 @@ int main(void)
 				std::stringstream ss;
 				ss.clear(); ss.str(s);
 
-				ss >> s >> numero_acciones >> close; //fragmentamos el mensaje
+				ss >> s >> numero_acciones >> closeValue; //fragmentamos el mensaje
 
-				precio_total = numero_acciones * close; //calculamos el precio total
+				precio_total = numero_acciones * closeValue; //calculamos el precio total
 				cantidad_actual = cantidad_actual + precio_total; //aumentamos nuestra cantidad_actual
 			}else if(subs == "BOUG"){
 				std::cerr << s << std::endl; //mostramos el mensaje de bought
@@ -200,9 +198,9 @@ int main(void)
 				std::stringstream ss;
 				ss.clear(); ss.str(s);
 
-				ss >> s >> numero_acciones >> close; //fragmentamos el mensaje
+				ss >> s >> numero_acciones >> closeValue; //fragmentamos el mensaje
 
-				precio_total = numero_acciones * close; //calculamos el precio total
+				precio_total = numero_acciones * closeValue; //calculamos el precio total
 				cantidad_actual = cantidad_actual - precio_total; //lo descontamos de nuestra cantidad
 			}else if(subs == "NOT_"){// no entiende el mensaje enviado,
 				std::cerr << "Pinyico" << std::endl;

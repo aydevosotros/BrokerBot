@@ -75,6 +75,10 @@ public:
 		C_machine->clearTrainingSet();
 	}
 
+	void loadThetas(){
+		C_machine->loadThetas();
+	}
+
 	void buy(double stockunits){
 		std::cout << "BUY " << stockunits << std::endl;
 	}

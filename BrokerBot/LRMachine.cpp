@@ -6,6 +6,7 @@ LRMachine::LRMachine() {
 	iterTrain = 1000;
 	alphaTrain = 0.01;
 	trainType = 1; //1 normal, 2 gradiente
+	C_lambda = 0;
 	C_executionMode = 1;
 }
 
@@ -29,11 +30,11 @@ void LRMachine::setParameters(char *argv[]) {
 
 		C_treshold = atof(argv[6]);
 	} else 	if(C_executionMode == 1){
-		C_inputFile = argv[3];
+//		C_inputFile = argv[3];
 
 //		std::cout	<< "Predicting " << C_inputFile << std::endl;
 
-		C_lambda = atof(argv[4]);
+//		C_lambda = atof(argv[4]);
 //		std::cout << "Lambda set to " << C_lambda << std::endl;
 	}
 
@@ -122,54 +123,67 @@ void LRMachine::loadInput(std::string filename) {
 	}
 }
 
-void LRMachine::loadThetas(std::string filename) {
+void LRMachine::loadThetas() {
 //	std::cout << "I'm loading Thetas with the LRMachine from " << filename << std::endl;
 
-	//Ahora averiguaremos el nombre que debe tener el archivo de thetas
-
-	std::vector<std::string> trainingFileParts(Utils::split(filename,'-'));
-
-	std::string root = trainingFileParts[0].substr(0,10);
-
-	std::string machinefolder = "LR/";
-
-	std::string value = trainingFileParts[0].substr(10,trainingFileParts[0].length());
-
-	std::string route = "";
-
-	route.append(root);
-
-	route.append(machinefolder);
-
-	route.append(value);	route.append("/");
-
-	std::string prefix = "";
-
-	prefix.append(root);
-	prefix.append(value);
-
-	std::string thetaName = filename.substr(prefix.length()+1,filename.length());
-
-	route.append(thetaName);
-
-	C_thetaFileName = route;
-
-//	std::cout << "EL archivo que vamos a leer es: " << thetasFileName << std::endl;
+//	//Ahora averiguaremos el nombre que debe tener el archivo de thetas
+//
+//	std::vector<std::string> trainingFileParts(Utils::split(filename,'-'));
+//
+//	std::string root = trainingFileParts[0].substr(0,10);
+//
+//	std::string machinefolder = "LR/";
+//
+//	std::string value = trainingFileParts[0].substr(10,trainingFileParts[0].length());
+//
+//	std::string route = "";
+//
+//	route.append(root);
+//
+//	route.append(machinefolder);
+//
+//	route.append(value);	route.append("/");
+//
+//	std::string prefix = "";
+//
+//	prefix.append(root);
+//	prefix.append(value);
+//
+//	std::string thetaName = filename.substr(prefix.length()+1,filename.length());
+//
+//	route.append(thetaName);
+//
+//	C_thetaFileName = route;
+//
+////	std::cout << "EL archivo que vamos a leer es: " << thetasFileName << std::endl;
 
 	//Y para terminar, escribimos las thetas en un archivo
 
 	std::string line;
-	std::ifstream thetasFile(C_thetaFileName.c_str());
+	std::ifstream thetasFile("LRthetas.txt");
 
 	if(thetasFile.is_open()){
+		std::getline(thetasFile,line);
 
-		while(std::getline(thetasFile,line)) {
-			C_theta.push_back(atof(line.c_str()));
-		}
+		C_nFeatures = atoi(line.c_str());
+
+		std::getline(thetasFile,line);
+
+		readThetas(line);
 
 		thetasFile.close();
 	} else{
 		std::cout << "Unable to open file" << std::endl;
+	}
+}
+
+void LRMachine::readThetas(std::string line){
+	C_theta = Utils::vStovD(Utils::split(line,';'));
+}
+
+void LRMachine::showThetas(){
+	for(int i = 0; i < C_theta.size(); i++){
+		std::cout << C_theta[i] << std::endl;
 	}
 }
 
@@ -224,6 +238,8 @@ void LRMachine::run(){
 //
 //		//Fin de la comprobacion
 
+		loadThetas();
+		showThetas();
 //		predict(C_input);
 
 		//Escribir lo que devuelve input en algun lado?
@@ -241,55 +257,57 @@ void LRMachine::train(){
 		trainByNormalEcuation();
 	}
 
-	//Ahora averiguaremos el nombre que debe tener el archivo de thetas
-
-	std::string command = "mkdir -p ";
-
-	std::vector<std::string> trainingFileParts(Utils::split(C_trainingFile,'-'));
-
-	std::string root = trainingFileParts[0].substr(0,10);
-
-	std::string machinefolder = "LR/";
-
-	std::string value = trainingFileParts[0].substr(10,trainingFileParts[0].length());
-
-	std::string route = "";
-
-	route.append(root);
-
-	route.append(machinefolder);
-
-	route.append(value);	route.append("/");
-
-	command.append(route);
-
-	system(command.c_str());
-
-//	std::cout << "El comando ha sido: "<< std::endl << command << std::endl;
-
-	std::string prefix = "";
-
-	prefix.append(root);
-	prefix.append(value);
-
-	std::string thetaName = C_trainingFile.substr(prefix.length()+1,C_trainingFile.length());
-
-	route.append(thetaName);
-
-	C_thetaFileName = route;
-
-//	std::cout << "EL archivo creado es: " << C_thetaFileName << std::endl;
+//	//Ahora averiguaremos el nombre que debe tener el archivo de thetas
+//
+//	std::string command = "mkdir -p ";
+//
+//	std::vector<std::string> trainingFileParts(Utils::split(C_trainingFile,'-'));
+//
+//	std::string root = trainingFileParts[0].substr(0,10);
+//
+//	std::string machinefolder = "LR/";
+//
+//	std::string value = trainingFileParts[0].substr(10,trainingFileParts[0].length());
+//
+//	std::string route = "";
+//
+//	route.append(root);
+//
+//	route.append(machinefolder);
+//
+//	route.append(value);	route.append("/");
+//
+//	command.append(route);
+//
+//	system(command.c_str());
+//
+////	std::cout << "El comando ha sido: "<< std::endl << command << std::endl;
+//
+//	std::string prefix = "";
+//
+//	prefix.append(root);
+//	prefix.append(value);
+//
+//	std::string thetaName = C_trainingFile.substr(prefix.length()+1,C_trainingFile.length());
+//
+//	route.append(thetaName);
+//
+//	C_thetaFileName = route;
+//
+////	std::cout << "EL archivo creado es: " << C_thetaFileName << std::endl;
 
 	//Y para terminar, escribimos las thetas en un archivo
 
 	std::string line;
-	std::ofstream thetasFile(C_thetaFileName.c_str());
+	std::ofstream thetasFile("LRthetas.txt");
 
 	if(thetasFile.is_open()){
+		thetasFile << C_nFeatures << std::endl;
+
 		thetasFile << C_theta[0];
 
 		for(unsigned int i = 1; i < C_theta.size(); i++){
-			thetasFile << "\n" << C_theta[i];
+			thetasFile << ";" << C_theta[i];
 		}
 
 		thetasFile.close();
@@ -352,8 +370,6 @@ void LRMachine::test(){
 
 double LRMachine::predict(Sample input){
 //	std::cout << "I'm predicting this input with the LRMachine" << std::endl;
-	if(C_executionMode == 1)
-		loadThetas("../Values/LR/MSFT/20101001-20131201-1d-14d-OpenValue-Training");
 
 	// Como tengo un sigmoide, con un threshold voy to cheto
 	double p = 0.0;

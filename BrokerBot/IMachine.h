@@ -14,6 +14,7 @@ public:
 	virtual void test()=0;
 	virtual double predict(Sample input)=0;
 	virtual void clearTrainingSet()=0;
+	virtual void loadThetas()=0;
 };
 
 #endif

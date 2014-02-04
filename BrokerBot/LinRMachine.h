@@ -25,6 +25,8 @@ public:
 	double predict(Sample input);
 	void clearTrainingSet();
 
+	void loadThetas(){ };
+
 private:
 	//ATRIBUTOS
 

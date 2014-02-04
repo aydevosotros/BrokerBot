@@ -25,6 +25,8 @@ public:
 	double predict(Sample input);
 	void clearTrainingSet();
 
+	void loadThetas();
+
 private:
 	//ATRIBUTOS
 
@@ -75,7 +77,8 @@ private:
 	void fillY();
 	void fillActualY();
 
-	void loadThetas(std::string filename);
+	void readThetas(std::string line);
+	void showThetas();
 
 };
 

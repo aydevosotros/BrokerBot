@@ -37,6 +37,8 @@ public:
 	double predict(Sample input);
 	void clearTrainingSet();
 
+	void loadThetas();
+
 private:
 	int executionMode;
 	std::string trainingFile;
@@ -77,9 +79,9 @@ private:
 
 	//Metodos de pruebas
 	void pruebaXorBasica();
-	void loadThetas();
 	void saveThetas();
 	void showThetas();
+	void readThetas(std::vector<std::string> lectura);
 	void init();
 
 	//Para los tests

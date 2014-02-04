@@ -1,0 +1,1 @@
+g++  main.cpp -o lgm -I include/ LRMachine.cpp SVM/SVMachine.cpp NNMachine.cpp LinRMachine.cpp SVM/LinearKernel.cpp SVM/PolynomialKernel.cpp SVM/RBFKernel.cpp -Llib/  -lboost_random -larmadillo -lCGAL -frounding-math -fopenmp
